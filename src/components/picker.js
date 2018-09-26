@@ -15,7 +15,7 @@ class Picker extends Component {
         return (
             <div className="picker">
                 <DatePicker
-                    selected={this.state.startDate}
+                    selected={this.props.startDate}
                     onChange={this.handleChange}
                 />
             </div>
