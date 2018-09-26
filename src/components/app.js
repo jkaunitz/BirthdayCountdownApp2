@@ -5,10 +5,10 @@ import Button from './button';
 import Clock from './clock';
 import ChangeDate from './changeDate';
 import LargeText from './largeText';
-import { isMoment } from 'moment';
+
+import moment from 'moment';
 
 export default class App extends Component {
-
   constructor(props) {
     super(props)
 
@@ -16,7 +16,7 @@ export default class App extends Component {
 
     this.state = {
       active: false,
-      startDate: isMoment(),
+      startDate: moment(),
       timeRemaining: {
         days: 0,
         hours: 0,
@@ -38,12 +38,21 @@ export default class App extends Component {
   }.bind(this);
 
   handleGenerate = function() {
-    this.setState({ active: true });
+    
 
     var bday = this.state.startDate.toDate();
     var today = new Date();
     var currentMonth = today.getMonth();
     var birthMonth = bday.getMonth();
+
+
+    var timeBetween = today.getTime() - bday.getTime();
+    var daysOld = Math.floor(timeBetween / (1000 * 60 * 60 * 24))
+    var age = Number((daysOld/365).toFixed(0));
+    this.setState({ 
+      age, 
+      active: true 
+    })
 
     if(birthMonth > currentMonth) {
       bday.setFullYear(today.getFullYear())
@@ -82,29 +91,32 @@ export default class App extends Component {
         minutes,
         seconds
       };
-
       this.setState({ timeRemaining });
       
       if (distance < 0) {
-          clearInterval(x);
+          clearInterval(this.timer);
           // document.getElementById("demo").innerHTML = "EXPIRED";
         }
-      }, 1000);
+      }.bind(this), 1000);
     }.bind(this)
-
 
   renderItems = function() {
     if(this.state.active) {
       return [
-        <Clock/>, 
-        ChangeDate('Change Date', () => this.setState({ active: false})),
-        LargeText('04/03'),
-        <label className="grid__remaining">Remaining until your 21st birthday</label>
+        <Clock timeRemaining={this.state.timeRemaining} />,
+        ChangeDate("Change Date", () => this.setState({ active: false})),
+        LargeText("04/03"),
+        <label className="grid__remaining">
+          Remaining until your {this.state.age}
+        </label>
       ]
     } else {
       return [
-       <Picker/> ,
-       Button('Generate Countdown', () => this.handleGenerate())
+       <Picker
+        startDate={this.state.startDate}
+        callback={date => this.handleChange(date)}
+      />,
+      Button('Generate Countdown', () => this.handleGenerate())
       ]
     }
   }.bind(this)
